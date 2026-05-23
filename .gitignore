@@ -1,0 +1,15 @@
+data/
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+*.aux
+*.log
+*.out
+.DS_Store
+~$*.pptx
+_preview/
+slides/_formulas/
+
+# Keep only the final presentation in the repository.
+*.pptx
+!Continous_Optimization_Project_Final_Presentation.pptx

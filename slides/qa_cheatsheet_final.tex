@@ -1,0 +1,796 @@
+\documentclass[a4paper,9pt]{article}
+
+% --------------------------------------------------
+% Packages
+% --------------------------------------------------
+\usepackage[margin=0.9cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{multicol}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage{titlesec}
+\usepackage{microtype}
+\usepackage{booktabs}
+
+% --------------------------------------------------
+% Colors
+% --------------------------------------------------
+\definecolor{unibaselteal}{RGB}{165,215,210}
+\definecolor{darkteal}{RGB}{20,90,85}
+\definecolor{softgray}{RGB}{245,245,245}
+\definecolor{darkgray}{RGB}{70,70,70}
+\definecolor{rmsred}{RGB}{220,0,0}
+\definecolor{adaorange}{RGB}{210,130,0}
+\definecolor{adampurple}{RGB}{130,70,170}
+
+% --------------------------------------------------
+% Formatting
+% --------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2pt}
+\setlength{\columnsep}{0.55cm}
+
+\setlist[itemize]{leftmargin=1.15em,itemsep=1pt,topsep=1pt}
+\setlist[enumerate]{leftmargin=1.3em,itemsep=1pt,topsep=1pt}
+
+\titleformat{\section}
+  {\large\bfseries\color{darkteal}}
+  {}
+  {0pt}
+  {}
+
+\titleformat{\subsection}
+  {\normalsize\bfseries}
+  {}
+  {0pt}
+  {}
+
+\tcbset{
+  sharp corners,
+  boxrule=0.4pt,
+  colback=softgray,
+  colframe=unibaselteal,
+  left=4pt,
+  right=4pt,
+  top=3pt,
+  bottom=3pt
+}
+
+\newtcolorbox{qa}[1]{
+  enhanced,
+  breakable,
+  colback=white,
+  colframe=unibaselteal,
+  title=\textbf{#1},
+  fonttitle=\small\bfseries,
+  coltitle=black,
+  attach boxed title to top left={xshift=2mm,yshift=-2mm},
+  boxed title style={colback=unibaselteal,colframe=unibaselteal},
+  before skip=5pt,
+  after skip=5pt,
+  left=4pt,
+  right=4pt,
+  top=5pt,
+  bottom=3pt
+}
+
+\newcommand{\key}[1]{\textbf{\color{darkteal}#1}}
+\newcommand{\method}[1]{\textbf{#1}}
+\newcommand{\oral}{\textit{\color{darkgray}Oral answer: }}
+
+% --------------------------------------------------
+% Document
+% --------------------------------------------------
+\begin{document}
+
+\begin{center}
+    {\LARGE \textbf{Q\&A Cheatsheet --- Adaptive Algorithms}}\\
+    \vspace{2pt}
+    {\large Continuous Optimization Project Presentation}\\
+    \vspace{2pt}
+    Erion Krasniqi \& Denis Mustafa Xhabrahimi
+\end{center}
+
+\vspace{-2mm}
+
+\begin{tcolorbox}[colback=unibaselteal!35,colframe=unibaselteal]
+\textbf{Golden Rule for oral Q\&A:}
+Answer in \textbf{3 sentences}: 
+\textbf{intuition} $\rightarrow$ \textbf{project connection} $\rightarrow$ \textbf{result / consequence}.\\
+Avoid long formulas unless explicitly asked. Start intuitive, then become precise if needed.
+\end{tcolorbox}
+
+\begin{multicols}{2}
+
+% ==================================================
+\section{1. Big Picture}
+
+\begin{qa}{Q: What is the main goal of your project?}
+\oral We compare adaptive first-order optimization methods against SGD. 
+We focus on Adagrad, AdaGrad-Norm, RMSprop and Adam. 
+Experimentally, we test whether they improve convergence speed and final performance on A9a and MNIST.
+\end{qa}
+
+\begin{qa}{Q: What is your main takeaway?}
+\oral Adaptive methods converge much faster in early iterations. 
+However, final test accuracy is often very similar across optimizers. 
+So the main benefit is \textbf{optimization speed}, not necessarily better final generalization.
+\end{qa}
+
+\begin{qa}{Q: Why adaptive step sizes?}
+\oral A fixed learning rate is difficult because one value may be too large for some directions and too small for others. 
+Adaptive methods use gradient history to rescale the step size automatically. 
+This makes training less sensitive and often much faster at the beginning.
+\end{qa}
+
+\begin{qa}{Q: Why is SGD your baseline?}
+\oral SGD is the standard stochastic first-order method. 
+It is simple, cheap per iteration and well understood theoretically. 
+Therefore it is the natural baseline for checking whether adaptive methods really help.
+\end{qa}
+
+% ==================================================
+\section{2. Theory Basics}
+
+\begin{qa}{Q: What is the basic gradient descent update?}
+\oral Gradient descent updates the parameter vector in the negative gradient direction. 
+The gradient gives the direction of steepest increase, so we move in the opposite direction. 
+The learning rate controls how large this movement is.
+\[
+x_{t+1}=x_t-\eta\nabla f(x_t)
+\]
+Here, \(x_t\) is the current point, \(\nabla f(x_t)\) is the gradient, and \(\eta\) is the step size.
+\end{qa}
+
+\begin{qa}{Q: What is the theoretical step-size choice?}
+\oral For an \(L\)-smooth function, theory often requires a step size such as \(\eta\leq 1/L\). 
+This prevents the update from being too aggressive. 
+In practice, however, \(L\) is often unknown or too conservative.
+\[
+\eta \leq \frac{1}{L}
+\]
+Here, \(L\) measures how quickly the gradient can change.
+\end{qa}
+
+\begin{qa}{Q: What does convexity mean?}
+\oral Convexity means the loss landscape has no bad local minima. 
+If we reach a stationary point in a convex problem, we have reached a global optimum. 
+This makes convex logistic regression a clean baseline for comparing optimizers.
+\[
+f(\lambda x+(1-\lambda)y)
+\leq
+\lambda f(x)+(1-\lambda)f(y)
+\]
+\end{qa}
+
+\begin{qa}{Q: Why is logistic loss convex?}
+\oral Logistic loss has non-negative curvature everywhere. 
+Its Hessian can be written as \(X^\top D X\), where \(D\) has non-negative diagonal entries. 
+Therefore the Hessian is positive semidefinite, so the loss is convex.
+\[
+H=X^\top D X
+\]
+For any vector \(z\):
+\[
+z^\top H z = z^\top X^\top D Xz = (Xz)^\top D(Xz) \geq 0
+\]
+because \(D\) has only non-negative diagonal entries.
+\end{qa}
+
+\begin{qa}{Q: What does positive semidefinite mean?}
+\oral A matrix is positive semidefinite if it has no negative curvature. 
+Formally, \(z^\top H z\geq 0\) for all vectors \(z\). 
+For optimization, this means the function is convex if the Hessian is positive semidefinite everywhere.
+\[
+H\succeq 0
+\quad \Longleftrightarrow \quad
+z^\top H z\geq 0
+\]
+\end{qa}
+
+% ==================================================
+\section{3. Loss Functions \& Formulas}
+
+\begin{qa}{Q: What is the logistic loss formula?}
+\oral Logistic loss is the negative log-likelihood for binary classification.
+It is convex and smooth --- ideal for testing convergence guarantees.
+
+\[
+f(w) = \frac{1}{n}\sum_{i=1}^n \log\bigl(1 + \exp(-y_i \cdot w^\top x_i)\bigr)
+\]
+
+\textbf{Gradient:}
+\[
+\nabla f(w) = -\frac{1}{n}\sum_{i=1}^n \frac{y_i\, x_i}{1 + \exp(y_i\, w^\top x_i)}
+\]
+
+\textbf{Hessian} (proves convexity):
+\[
+\nabla^2 f(w) = \frac{1}{n} X^\top D X, \quad D_{ii} = \sigma_i(1-\sigma_i) > 0
+\]
+where \(\sigma_i = \sigma(y_i w^\top x_i)\) is the sigmoid.
+\end{qa}
+
+\begin{qa}{Q: What is softmax cross-entropy?}
+\oral Multi-class generalization of logistic loss.
+Measures how well predicted probabilities match true labels.
+Convex in the weight matrix \(W\).
+
+\[
+f(W) = -\frac{1}{n}\sum_{i=1}^n \log \frac{\exp(w_{y_i}^\top x_i)}{\sum_{k=1}^K \exp(w_k^\top x_i)}
+\]
+
+where \(W = [w_1, \ldots, w_K]\), \(K=10\) classes.
+
+\textbf{Gradient} w.r.t.\ class \(k\):
+\[
+\nabla_{w_k} f = \frac{1}{n}\sum_{i=1}^n (p_{ik} - \mathbf{1}[y_i=k])\, x_i
+\]
+
+with \(p_{ik} = \text{softmax}_k(Wx_i) = \frac{\exp(w_k^\top x_i)}{\sum_j \exp(w_j^\top x_i)}\).
+\end{qa}
+
+% ==================================================
+\section{4. Non-Convex Regularization}
+
+\begin{qa}{Q: What makes your regularizer non-convex?}
+\oral For small weights, the regularizer behaves similarly to an \(\ell_2\) penalty. 
+For larger weights, it saturates instead of growing indefinitely. 
+This curvature change introduces non-convexity.
+\[
+R(w)
+=
+\lambda
+\sum_j
+\frac{\alpha w_j^2}
+{1+\alpha w_j^2}
+\]
+\end{qa}
+
+\begin{qa}{Q: What is the intuition behind this regularizer?}
+\oral The term penalizes small and medium weights, but the penalty becomes bounded for large weights. 
+So very large weights are not punished infinitely strongly. 
+This creates a softer regularization effect compared to standard \(\ell_2\).
+\[
+\frac{\alpha w_j^2}{1+\alpha w_j^2}
+\rightarrow 1
+\quad \text{for large } |w_j|
+\]
+\end{qa}
+
+\begin{qa}{Q: Why does the non-convex regularizer have limited impact?}
+\oral At moderate \(\lambda\), the regularization term is small compared to logistic loss. 
+So the overall landscape is only mildly non-convex. 
+That is why the optimizer ranking stays almost the same.
+\[
+F(w)= \text{logistic loss} + \lambda R(w)
+\]
+If \(\lambda\) is small, the second term only mildly changes the landscape.
+\end{qa}
+
+\begin{qa}{Q: What happens if \(\lambda\) becomes larger?}
+\oral If \(\lambda\) becomes larger, the regularizer starts to dominate. 
+Then it pushes weights toward smaller values and can cause underfitting. 
+In our \(\lambda\)-sweep, accuracy drops when \(\lambda \geq 0.1\).
+\end{qa}
+
+\begin{qa}{Q: How is \(\lambda\) chosen?}
+\oral \(\lambda\) is a hyperparameter. 
+It controls the trade-off between data fit and regularization. 
+We use \(\lambda = 0.01\), \(\alpha = 1\) following Reddi et al.\ (2016).
+\end{qa}
+
+% ==================================================
+\section{5. Parameter Settings}
+
+\begin{tcolorbox}[title=\textbf{All Hyperparameters Used}, colback=white]
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Note} \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Shared:}} \\
+Batch size (A9a) & 128 & \\
+Batch size (MNIST) & 256 & \\
+Epochs & 10--15 & \\
+Seeds & 3 & averaged \\
+\(\epsilon\) & \(10^{-8}\) & all adaptive \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{SGD:}} \\
+\(\eta\) & tuned & grid search \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Adagrad (Duchi et al.\ 2011):}} \\
+\(\eta\) & tuned & base LR \\
+\(G_0\) & 0 & per-coord accum. \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{AdaGrad-Norm (Ward et al.\ 2020):}} \\
+\(\eta\) & tuned & base LR \\
+\(b_0^2\) & 0 & scalar accum. \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{RMSprop (Tieleman \& Hinton 2012):}} \\
+\(\eta\) & tuned & base LR \\
+\(\rho\) & 0.9 & decay factor \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Adam (Kingma \& Ba 2014):}} \\
+\(\eta\) & tuned & base LR \\
+\(\beta_1\) & 0.9 & 1st moment decay \\
+\(\beta_2\) & 0.999 & 2nd moment decay \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Non-convex regularizer:}} \\
+\(\lambda\) & 0.01 & reg.\ strength \\
+\(\alpha\) & 1 & curvature param \\
+\bottomrule
+\end{tabular}
+\end{tcolorbox}
+
+\begin{qa}{Q: How did you choose learning rates?}
+\oral Log-scale sweep: \(\eta \in \{10^{-4}, 3\!\times\!10^{-4}, 10^{-3}, \ldots, 1\}\). 
+Picked best final training loss per optimizer.
+Key: Adagrad very robust across range; RMSprop diverges at \(\eta=1\).
+\end{qa}
+
+\begin{qa}{Q: Why \(\beta_2 = 0.999\) for Adam?}
+\oral Default from Kingma \& Ba (2014). Very conservative --- needs \(\sim\)1000 iterations to stabilize \(\hat{v}_t\). 
+This is why Adam adapts more slowly initially vs.\ RMSprop (\(\rho=0.9\), adapts in \(\sim\)10 steps).
+\end{qa}
+
+\begin{qa}{Q: Why \(\rho = 0.9\) for RMSprop?}
+\oral Standard from Hinton's lecture notes. 
+Effective memory \(\sim\)10 steps (\(0.9^{10}\approx 0.35\)). 
+Much faster than Adam's \(\beta_2=0.999\) (memory \(\sim\)1000 steps).
+\end{qa}
+
+\begin{qa}{Q: Why mini-batches of 128/256?}
+\oral Standard compromise: full-batch is stable but slow, single-sample is fast but noisy. 
+128 for A9a (smaller), 256 for MNIST (larger). 
+Matches stochastic optimization setting of our convergence guarantees.
+\end{qa}
+
+% ==================================================
+\section{6. Convergence Rates}
+
+\begin{qa}{Q: What does \(O(1/\sqrt{T})\) mean intuitively?}
+\oral Sublinear convergence. Progress slows over time. 
+To halve the error: need \(4\times\) more iterations.
+\[
+\text{error}(T)\sim \frac{1}{\sqrt{T}}
+\qquad
+T_{\text{new}}=4T \text{ to halve error}
+\]
+\end{qa}
+
+\begin{qa}{Q: Is \(O(1/\sqrt{T})\) linear convergence?}
+\oral No. Linear = error multiplied by constant factor each step (\(e_t \leq c^t\), \(0<c<1\)). 
+\(O(1/\sqrt{T})\) is sublinear --- flattens out.
+On log-plot: linear = straight line; sublinear = curves.
+\end{qa}
+
+\begin{qa}{Q: Difference between convergence rate and guarantee?}
+\oral Rate = how fast (e.g.\ \(O(1/\sqrt{T})\)). 
+Guarantee = under which assumptions (smoothness, unbiased gradients, bounded variance). 
+RMSprop: no guarantee; SGD: \(O(1/\sqrt{T})\) under standard assumptions.
+\end{qa}
+
+\begin{qa}{Q: Why are empirical rates faster than theoretical?}
+\oral Theory = worst-case for arbitrary/adversarial functions. 
+Our logistic/softmax have nice structure (smooth, bounded spectral norm). 
+So empirical convergence is much faster than the bounds predict.
+\end{qa}
+
+% ==================================================
+\section{7. Polyak Step Size}
+
+\begin{qa}{Q: What is the Polyak step size?}
+\oral Adapts the step size based on the function value gap to the optimum.
+Derived from minimizing a quadratic upper bound along \(-\nabla f(x_t)\).
+Requires knowledge of \(f^*\) (often unknown in practice).
+
+\[
+\eta_t = \frac{f(x_t) - f^*}{\|g_t\|^2}, \quad g_t = \nabla f(x_t)
+\]
+
+\textbf{Derivation:} For \(L\)-smooth convex \(f\):
+\[
+f(x) \leq f(x_t) + \nabla f(x_t)^\top(x-x_t) + \frac{L}{2}\|x-x_t\|^2
+\]
+Setting this model \(= f^*\) and solving along \(-\nabla f(x_t)\) gives \(\eta_t\).
+
+\textbf{Remark:} The factor 2 from Taylor is absorbed because Polyak minimizes the quadratic model along the gradient direction (not arbitrary directions).
+\end{qa}
+
+\begin{qa}{Q: Why does Polyak adapt automatically?}
+\oral \textbf{Near \(x^*\):} gap small \(\Rightarrow\) small steps (no overshooting).\\
+\textbf{Far from \(x^*\):} gap large, but \(\|g_t\|\) also large \(\Rightarrow\) self-regulates.\\
+\textbf{Far + flat:} \(\|g_t\|\) small \(\Rightarrow\) large step (needs big jump on flat terrain).
+
+Adapts to distance-to-optimum \textbf{and} local gradient magnitude simultaneously.
+\end{qa}
+
+\begin{qa}{Q: Polyak algorithm?}
+\oral
+\begin{enumerate}[nosep]
+\item Compute \(g_t = \nabla f(x_t)\)
+\item Set \(\eta_t = (f(x_t) - f^*) / \|g_t\|^2\)
+\item Update \(x_{t+1} = x_t - \eta_t g_t\)
+\end{enumerate}
+Requires: smooth convex \(f\), known optimal value \(f^*\).
+\end{qa}
+
+\begin{qa}{Q: Why didn't you include Polyak?}
+\oral (1) Requires \(f^*\) --- unknown for our problems.
+(2) Different adaptivity family: function-value-based vs.\ gradient-accumulation.
+(3) Our scope: methods using \textbf{only gradient history}.
+\end{qa}
+
+\begin{qa}{Q: Connection to your project?}
+\oral Both Polyak and Adagrad/Adam adapt the step size. 
+Polyak adapts via \emph{distance to optimal} (needs \(f^*\)). 
+Adagrad/Adam adapt via \emph{gradient behavior} (needs only gradient samples --- more practical when \(f^*\) unknown).
+\end{qa}
+
+% ==================================================
+\section{8. SGD vs Adaptive Methods}
+
+\begin{qa}{Q: Difference between SGD and adaptive methods?}
+\oral SGD uses one global \(\eta\) for all coordinates. 
+Adaptive methods change effective step size using past gradient info. 
+Helps when coordinates have different scales.
+\[
+w_{t+1} = w_t-\eta g_t \quad \text{(same \(\eta\) everywhere)}
+\]
+\end{qa}
+
+\begin{qa}{Q: Typical assumptions for SGD's \(O(1/\sqrt{T})\)?}
+\oral (1) \(L\)-smooth: \(\|\nabla f(x)-\nabla f(y)\| \leq L\|x-y\|\).
+(2) Unbiased: \(\mathbb{E}[g_t]=\nabla f(w_t)\).
+(3) Bounded variance: \(\mathbb{E}\|g_t-\nabla f(w_t)\|^2 \leq \sigma^2\).
+\end{qa}
+
+% ==================================================
+\section{9. Adagrad}
+
+\begin{qa}{Q: How does Adagrad work?}
+\oral Scales update using accumulated past squared gradients (per coordinate).
+Large past gradients \(\Rightarrow\) smaller effective step size.
+
+\[
+G_t = G_{t-1} + g_t \odot g_t
+\qquad
+w_{t+1} = w_t - \frac{\eta}{\sqrt{G_t}+\epsilon}\, g_t
+\]
+
+Effective LR: \(\eta_t^{\text{eff}} = \eta/(\sqrt{G_{t,j}}+\epsilon)\). Shrinks monotonically.
+Rate: \(O(\log T/\sqrt{T})\).
+\end{qa}
+
+\begin{qa}{Q: Intuition behind Adagrad?}
+\oral More accumulated gradient magnitude \(\Rightarrow\) more cautious steps.
+\[
+G_t \uparrow \;\Rightarrow\; \sqrt{G_t} \uparrow \;\Rightarrow\; \eta_t^{\text{eff}} \downarrow
+\]
+Stabilizes optimization; avoids too aggressive steps on already-explored directions.
+\end{qa}
+
+\begin{qa}{Q: Why can Adagrad slow down?}
+\oral \(G_t\) only grows (\(g_t^2 \geq 0\), so \(G_t \geq G_{t-1}\)). 
+Over time: \(\eta/\sqrt{G_t} \to 0\). 
+Good for convex (need decreasing steps), bad for long non-convex training.
+\end{qa}
+
+% ==================================================
+\section{10. AdaGrad-Norm}
+
+\begin{qa}{Q: How does AdaGrad-Norm work?}
+\oral One global scalar accumulator (not per-coordinate).
+Accumulates squared norm of full gradient.
+
+\[
+b_t^2 = b_{t-1}^2 + \|g_t\|^2
+\qquad
+w_{t+1} = w_t - \frac{\eta}{b_t+\epsilon}\, g_t
+\]
+
+Same \(O(1/\sqrt{T})\) rate. Cleaner non-convex theory (Ward et al.\ 2020).
+\end{qa}
+
+\begin{qa}{Q: Difference Adagrad vs.\ AdaGrad-Norm?}
+\oral Adagrad: per-coordinate \(G_{jj}\) --- each feature gets own LR. Good for heterogeneous/sparse features.\\
+AdaGrad-Norm: one scalar \(b_t\) for all --- simpler, loses per-feature adaptation.\\
+MNIST (784 heterogeneous features): Adagrad wins clearly.
+\end{qa}
+
+% ==================================================
+\section{11. RMSprop}
+
+\begin{qa}{Q: How does RMSprop work?}
+\oral Exponential forgetting of old squared gradients (moving average instead of sum).
+
+\[
+v_t = \rho\, v_{t-1} + (1-\rho)\,g_t^2
+\qquad
+w_{t+1} = w_t - \frac{\eta}{\sqrt{v_t}+\epsilon}\, g_t
+\]
+
+\(\rho=0.9\): keeps 90\% old, adds 10\% new.
+\(v_t\) can increase \textbf{or decrease} (unlike Adagrad's \(G_t\)).
+No formal convergence guarantee.
+\end{qa}
+
+\begin{qa}{Q: Why is RMSprop different from Adagrad?}
+\oral Adagrad: \(G_t = G_{t-1} + g_t^2\) --- only grows, never forgets.\\
+RMSprop: \(v_t = \rho v_{t-1} + (1-\rho)g_t^2\) --- forgets old info.\\
+Avoids permanent LR decay \(\Rightarrow\) keeps adapting during long training.
+\end{qa}
+
+\begin{qa}{Q: Why can RMSprop diverge at large \(\eta\)?}
+\oral If \(v_t\) becomes small (gradients recently small): denominator \(\sqrt{v_t+\epsilon}\) is tiny.
+Then \(\eta/\sqrt{v_t+\epsilon}\) becomes very large \(\Rightarrow\) unstable updates.
+We show this: divergence at \(\eta=1\) in our LR sweep.
+\end{qa}
+
+% ==================================================
+\section{12. Adam}
+
+\begin{qa}{Q: How does Adam work?}
+\oral Combines momentum (1st moment) with adaptive scaling (2nd moment) + bias correction.
+
+\textbf{Step 1:} \(m_t = \beta_1 m_{t-1} + (1-\beta_1)g_t\), \quad \(v_t = \beta_2 v_{t-1} + (1-\beta_2)g_t^2\)
+
+\textbf{Step 2:} \(\hat m_t = m_t/(1-\beta_1^t)\), \quad \(\hat v_t = v_t/(1-\beta_2^t)\)
+
+\textbf{Step 3:} \(w_{t+1} = w_t - \eta\hat m_t / (\sqrt{\hat v_t}+\epsilon)\)
+
+\(\hat m_t\) = smoothed direction; \(\hat v_t\) = adaptive scaling.
+\end{qa}
+
+\begin{qa}{Q: Why is bias correction needed?}
+\oral \(m_0=0\), \(v_0=0\) \(\Rightarrow\) early averages biased toward zero.
+\((1-\beta^t)^{-1}\) corrects this.
+At \(t=1\): \(1-\beta_2 = 0.001\), so correction factor is \(\times 1000\).
+\end{qa}
+
+\begin{qa}{Q: Why can Adam fail to converge?}
+\oral Exponential forgetting in \(v_t\) can make \(\hat v_t\) decrease.
+If too small: \(\eta/\sqrt{\hat v_t}\) explodes.
+\textbf{Fix:} AMSGrad forces \(\hat v_t = \max(\hat v_{t-1}, v_t)\) (non-decreasing).
+\end{qa}
+
+\begin{qa}{Q: Why is Adam slower on A9a but faster on MNIST?}
+\oral \textbf{A9a (simple convex):} Gradient already correct direction. Momentum (\(\beta_1=0.9\)) dampens it --- overhead. \(\beta_2=0.999\) adapts too slowly.\\
+\textbf{MNIST (harder):} 784 dims, 10 classes, noisy gradients. Momentum smooths noise. Per-coordinate scaling matters with heterogeneous features.
+\end{qa}
+
+% ==================================================
+\section{13. Results Interpretation}
+
+\begin{qa}{Q: Why do adaptive methods converge faster?}
+\oral They rescale using gradient history --- avoids too-large or too-small steps per direction.
+In our plots: mainly improves early loss decrease.
+\end{qa}
+
+\begin{qa}{Q: Why are final accuracies similar?}
+\oral Same convex objective \(\Rightarrow\) same global minimum.
+Optimizer changes path/speed, not destination.
+A9a: all \(\sim\)85\%. MNIST: all \(\sim\)92\%.
+\end{qa}
+
+\begin{qa}{Q: What does the gradient norm plot tell us?}
+\oral Shows proximity to stationary point.
+Adaptive methods bring down large initial gradients faster (normalization).
+On A9a: norms don't reach zero --- that's the \textbf{stochastic} gradient norm (irreducible mini-batch variance).
+\end{qa}
+
+\begin{qa}{Q: Are your results trustworthy?}
+\oral 3 seeds, mean \(\pm\) std shown.
+Trends consistent across datasets/losses.
+Final report: more seeds + sensitivity + wall-clock.
+\end{qa}
+
+% ==================================================
+\section{14. Experimental Setup}
+
+\begin{qa}{Q: What model? Neural network?}
+\oral \textbf{No.} Linear models.
+A9a: logistic regression (binary).
+MNIST: softmax regression (10 classes, no hidden layers).
+Isolates optimizer effect.
+\end{qa}
+
+\begin{qa}{Q: Why not neural networks?}
+\oral Introduce confounds (architecture, init, activations).
+Goal: clean optimizer comparison.
+Linear models = interpretable optimization behavior.
+\end{qa}
+
+\begin{qa}{Q: Why A9a and MNIST?}
+\oral Two regimes: sparse binary (123 features) vs.\ dense multi-class (784 features).
+Tests per-coordinate scaling in different settings.
+\end{qa}
+
+\begin{qa}{Q: Did you implement from scratch?}
+\oral Yes. All optimizers + losses in NumPy.
+Handles dense and sparse matrices (\texttt{scipy.sparse}).
+No PyTorch/TensorFlow --- full control.
+\end{qa}
+
+% ==================================================
+\section{15. Theory vs Practice}
+
+\begin{qa}{Q: Do empirical results match theory?}
+\oral Qualitatively yes. Adaptive = faster, as predicted.
+But empirical rates much faster than worst-case bounds.
+Our objectives have more structure than general theory assumes.
+\end{qa}
+
+\begin{qa}{Q: Why care about rates if final accuracy same?}
+\oral Compute budget. 500 vs.\ 2000 iterations = \(4\times\) speedup.
+For large-scale problems: days vs.\ weeks.
+\end{qa}
+
+% ==================================================
+\section{16. Outlook}
+
+\begin{qa}{Q: Why LR sweep?}
+\oral Shows robustness. Adaptive methods should reduce sensitivity to \(\eta\).
+We verify: Adagrad robust, RMSprop fragile.
+\end{qa}
+
+\begin{qa}{Q: Why wall-clock comparison?}
+\oral Adaptive methods have overhead per step (accumulator updates).
+Need to check: still faster in real seconds?
+\end{qa}
+
+\begin{qa}{Q: Why add L-BFGS?}
+\oral Quasi-Newton method from different family (2nd-order approximation).
+Reference beyond 1st-order adaptive methods.
+Planned for final report.
+\end{qa}
+
+% ==================================================
+\section{17. Formula Summary}
+
+\begin{tcolorbox}[title=\textbf{All Updates at a Glance}, colback=unibaselteal!12]
+\textbf{SGD:} \(w_{t+1}=w_t-\eta g_t\)
+
+\textbf{Adagrad:} \(w_{t+1} = w_t - \frac{\eta}{\sqrt{G_t}+\epsilon}\, g_t\), \;  \(G_t=G_{t-1}+g_t \odot g_t\)
+
+\textbf{AdaGrad-Norm:} \(w_{t+1} = w_t - \frac{\eta}{b_t+\epsilon}\, g_t\), \; \(b_t^2=b_{t-1}^2+\|g_t\|^2\)
+
+\textbf{RMSprop:} \(w_{t+1} = w_t - \frac{\eta}{\sqrt{v_t}+\epsilon}\, g_t\), \; \(v_t=\rho v_{t-1}+(1-\rho)g_t^2\)
+
+\textbf{Adam:} \(w_{t+1} = w_t - \frac{\eta\hat m_t}{\sqrt{\hat v_t}+\epsilon}\)
+
+\textbf{Polyak:} \(x_{t+1} = x_t - \frac{f(x_t)-f^*}{\|g_t\|^2}\, g_t\) \quad (needs \(f^*\))
+\end{tcolorbox}
+
+% ==================================================
+\section{18. Quick-Fire Definitions}
+
+\begin{tcolorbox}[title=\textbf{Fast Definitions}, colback=white]
+\textbf{Positive definite:} all eigenvalues \(>0\); \(x^\top\!Ax > 0\;\forall x\neq 0\).\\
+\textbf{Positive semidefinite:} all eigenvalues \(\geq 0\); \(x^\top\!Ax \geq 0\;\forall x\).\\
+\textbf{Lipschitz gradient:} \(\|\nabla f(x)-\nabla f(y)\| \leq L\|x-y\|\).\\
+\textbf{Unbiased gradient:} \(\mathbb{E}[g_t] = \nabla f(w_t)\).\\
+\textbf{Momentum:} running average of past gradients.\\
+\textbf{Bias correction:} \((1-\beta^t)^{-1}\); compensates zero init.\\
+\textbf{Per-coordinate:} each feature gets own effective LR.\\
+\textbf{Forgetting:} discards old info (RMSprop \(\rho\), Adam \(\beta_2\)).\\
+\textbf{Sublinear:} \(O(1/\sqrt{T})\); error goes to zero slowly.\\
+\textbf{Linear:} \(e_t \leq \rho^t\); straight line on log-plot.\\
+\textbf{Superlinear:} faster than linear; Newton near optimum.\\
+\textbf{Strongly convex:} \(\nabla^2 f \succeq \mu I\); unique minimum.
+\end{tcolorbox}
+
+% ==================================================
+\section{19. Emergency Answers}
+
+\begin{qa}{If you don't know}
+\oral We did not investigate this specific point yet, but based on the theory I would expect \dots
+\end{qa}
+
+\begin{qa}{If they want more theory}
+\oral The formal guarantee depends on smoothness and bounded variance. Intuitively, the method rescales updates based on gradient history.
+\end{qa}
+
+\begin{qa}{If they criticize results}
+\oral That's a fair point. These are progress results. Final report: LR sensitivity, wall-clock time, stronger \(\lambda\), more seeds.
+\end{qa}
+
+\begin{qa}{Are adaptive always better?}
+\oral No. Faster early, but can need tuning and have weaker theory. Our results: speed yes, final accuracy no.
+\end{qa}
+
+% ==================================================
+\section{20. Ten Sentences to Memorize}
+
+\begin{tcolorbox}[title=\textbf{Must-Know}, colback=unibaselteal!12]
+\begin{enumerate}
+    \item Adaptive methods improve \textbf{speed}, not final accuracy.
+    \item We use \textbf{linear models} to isolate optimizer effect.
+    \item Adagrad: \textbf{accumulated gradient magnitude}, per-coordinate.
+    \item RMSprop: \textbf{forgets old gradients}, adapts quickly.
+    \item Adam = momentum + adaptive; theory is \textbf{delicate}.
+    \item Final accuracies similar: same objective, same minimum.
+    \item Non-convex regularizer: limited at moderate \(\lambda\).
+    \item A9a (sparse, 123d) vs.\ MNIST (dense, 784d).
+    \item Worst-case bounds are conservative; empirics faster.
+    \item Report: LR sweep, wall-clock, stronger \(\lambda\), L-BFGS.
+\end{enumerate}
+\end{tcolorbox}
+
+\end{multicols}
+
+\newpage
+
+% ==================================================
+\section*{Ultra-Short Version for the Table}
+
+\begin{multicols}{2}
+
+\begin{tcolorbox}[title=\textbf{Main Message}, colback=unibaselteal!15]
+Adaptive methods improve \textbf{speed}, not necessarily final accuracy.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Why Adaptive?}, colback=white]
+Fixed \(\eta\) is hard. Adaptive methods use gradient history to rescale updates.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{SGD}, colback=white]
+Simple baseline, cheap, but needs careful \(\eta\) and has no coordinate adaptation.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Adagrad}, colback=white]
+Per-coordinate scaling via accumulated gradient magnitude. Fast early, but can become conservative.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{AdaGrad-Norm}, colback=white]
+One global scalar instead of per-coordinate. Simpler, clean non-convex theory.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{RMSprop}, colback=white]
+Forgets old gradients. Fast and practical, but no formal guarantee. Diverges at high \(\eta\).
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Adam}, colback=white]
+Momentum + adaptive scaling. Powerful, but convergence more delicate (AMSGrad fix).
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Polyak Step Size}, colback=white]
+\(\eta_t = (f(x_t)-f^*)/\|g_t\|^2\). Function-value-based. Needs \(f^*\). Not in our experiments.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{A9a Result}, colback=white]
+RMSprop and Adagrad fastest; all reach \(\sim\)85\% test accuracy.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{MNIST Result}, colback=white]
+Adagrad fastest; per-coordinate scaling crucial in 784-dim setting. All reach \(\sim\)92\%.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Non-Convex Regularizer}, colback=white]
+\(\lambda=0.01\): mild non-convexity, little effect. \(\lambda \geq 0.1\): underfitting.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Why Linear Models?}, colback=white]
+Controlled setup. Isolates optimizer. Convex = clean theory.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Logistic Loss (A9a)}, colback=white]
+\(f(w) = \frac{1}{n}\sum_i \log(1+\exp(-y_i w^\top x_i))\). Convex. Binary.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Softmax Loss (MNIST)}, colback=white]
+\(f(W) = -\frac{1}{n}\sum_i \log \frac{\exp(w_{y_i}^\top x_i)}{\sum_k \exp(w_k^\top x_i)}\). Convex. 10 classes.
+\end{tcolorbox}
+
+\begin{tcolorbox}[title=\textbf{Outlook}, colback=white]
+LR sweep, wall-clock time, stronger \(\lambda\), L-BFGS baseline.
+\end{tcolorbox}
+
+\end{multicols}
+
+\end{document}

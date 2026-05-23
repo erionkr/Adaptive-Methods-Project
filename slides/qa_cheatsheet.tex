@@ -1,0 +1,227 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{multicol}
+
+\definecolor{teal}{RGB}{0,128,128}
+\definecolor{lightgray}{RGB}{245,245,245}
+
+\titleformat{\section}{\large\bfseries\color{teal}}{}{0em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+
+\title{\textbf{Q\&A Cheatsheet --- Adaptive Algorithms}\\[4pt]
+\large Continuous Optimization $\cdot$ Project Presentation $\cdot$ 20.05.2026}
+\author{Erion Krasniqi \& Denis Mustafa Xhabrahimi}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1em}
+
+%=============================================================================
+\section{Mathematical Definitions}
+%=============================================================================
+
+\subsection{Q: ``What does it mean for a function to be convex?''}
+A function $f$ is convex if for all $x, y$ and $\lambda \in [0,1]$:
+\[
+  f(\lambda x + (1-\lambda)y) \;\leq\; \lambda f(x) + (1-\lambda)f(y).
+\]
+Geometrically: the line segment between any two points on the graph lies above the function.
+Equivalently, if $f$ is twice differentiable, the Hessian $\nabla^2 f \succeq 0$ everywhere.
+
+\subsection{Q: ``Why is logistic loss convex?''}
+The Hessian of logistic loss is $\nabla^2 f = X^\top D X$, where $D$ is diagonal with entries $D_{ii} = \sigma_i(1-\sigma_i)$.
+Since $\sigma_i \in (0,1)$, all entries are positive, so $D \succ 0$.
+Then $X^\top D X \succeq 0$ for any $X$, which means the loss is convex.
+
+\subsection{Q: ``What makes your non-convex regularizer non-convex?''}
+The regularizer is:
+\[
+  r(w) = \sum_{j} \frac{\alpha\, w_j^2}{1 + \alpha\, w_j^2}.
+\]
+Its second derivative changes sign: for small $w_j$ it behaves like $\alpha w_j^2$ (convex), but as $w_j$ grows, the term saturates at 1 and the curvature becomes negative.
+So the overall objective --- convex logistic loss plus this regularizer --- is non-convex.
+We use $\lambda = 0.01$, $\alpha = 1$ following Reddi et al.\ (2016).
+
+\subsection{Q: ``What does $O(1/\sqrt{T})$ convergence mean?''}
+The suboptimality $f(w_t) - f^*$ decreases at rate $\propto 1/\sqrt{T}$.
+After $T$ iterations, we are at most $c/\sqrt{T}$ away from optimal.
+Concretely: to halve the error, you need $4\times$ more iterations.
+This is \textbf{sublinear} convergence, typical for stochastic first-order methods.
+
+\subsection{Q: ``Is $O(1/\sqrt{T})$ linear convergence?''}
+\textbf{No.} Linear convergence means exponential decrease:
+\[
+  f(w_t) - f^* \;\leq\; \rho^t \cdot (f(w_0) - f^*), \quad \rho < 1.
+\]
+On a log-scale plot, linear convergence is a straight line going down.
+$O(1/\sqrt{T})$ is sublinear --- it flattens out.
+SGD on strongly convex problems \emph{can} achieve linear convergence with decreasing step size, but in the stochastic non-convex setting, $O(1/\sqrt{T})$ is the standard rate.
+
+\subsection{Q: ``Difference between convergence rate and convergence guarantee?''}
+The \textbf{rate} tells you \emph{how fast}: e.g.\ $O(1/\sqrt{T})$.
+The \textbf{guarantee} specifies \emph{under what conditions}: bounded gradients, Lipschitz smoothness, unbiased gradient estimates.
+RMSprop has no formal convergence guarantee --- no proven rate under standard assumptions.
+
+%=============================================================================
+\section{Optimizer-Specific Questions}
+%=============================================================================
+
+\subsection{Q: ``Difference between Adagrad and AdaGrad-Norm?''}
+\textbf{Adagrad:} per-coordinate accumulator $G_{jj} = \sum_t g_{t,j}^2$.
+Each coordinate gets its own effective learning rate $\eta / \sqrt{G_{jj}}$.
+
+\textbf{AdaGrad-Norm:} single scalar $G_t = \sum_t \|g_t\|^2$.
+All coordinates share the same scaling $\eta / \sqrt{G_t}$.
+
+Adagrad is better when features have heterogeneous scales (sparse data).
+AdaGrad-Norm is simpler and has the same $O(1/\sqrt{T})$ rate.
+
+\subsection{Q: ``Why does Adagrad's step size shrink to zero?''}
+The accumulator $G_{jj}$ grows monotonically --- it sums squared gradients without forgetting.
+After many iterations, $\sqrt{G_{jj}}$ becomes very large and the effective step size $\eta/\sqrt{G_{jj}} \to 0$.
+This is actually \emph{desired} for convex problems (you want the step size to decrease to converge), but for non-convex problems or long training runs, it can cause premature convergence.
+
+\subsection{Q: ``Why does Adam sometimes not converge?''}
+Reddi et al.\ (2018) showed a concrete counterexample.
+The issue: exponential forgetting in the second moment estimate $\hat{v}_t$.
+If a rare but large gradient appears, the denominator can become very small, causing the step size to blow up.
+Fix: \textbf{AMSGrad} uses $\hat{v}_t = \max(\hat{v}_{t-1}, v_t)$, ensuring the denominator never shrinks.
+
+\subsection{Q: ``Why does RMSprop work so well despite no convergence guarantee?''}
+RMSprop uses exponential forgetting --- it only remembers recent gradients, making it very adaptive to changes in the loss landscape.
+The lack of formal guarantees means we can't prove a worst-case rate, but empirically it's consistently among the fastest.
+That said, it \emph{can} diverge at large learning rates --- we show this in our LR sweep (backup slide~24).
+
+\subsection{Q: ``Is Adagrad always better than SGD?''}
+No. Adagrad's advantage comes from per-coordinate scaling, which matters most with sparse or heterogeneously-scaled features.
+On dense, uniformly-scaled features, the benefit is small.
+Also, for very long training runs, Adagrad's monotonically decreasing step size can be a disadvantage vs.\ SGD with a tuned schedule.
+
+%=============================================================================
+\section{Setup \& Methodology}
+%=============================================================================
+
+\subsection{Q: ``What model are you using? Is it a neural network?''}
+\textbf{No, linear models.}
+\begin{itemize}[nosep]
+  \item A9a: logistic regression --- linear classifier with sigmoid output.
+  \item MNIST: softmax regression --- linear multi-class classifier.
+\end{itemize}
+No hidden layers, no nonlinear activations.
+We chose linear models deliberately: the focus is on comparing \emph{optimizers}, not architectures.
+A linear model gives a clean, controlled setting to isolate the optimizer effect.
+
+\subsection{Q: ``Why linear models and not neural networks?''}
+Three reasons:
+\begin{enumerate}[nosep]
+  \item Logistic loss on a linear model is \textbf{convex} $\Rightarrow$ convergence guarantees apply directly.
+  \item Isolates the optimizer effect --- no architecture confounds.
+  \item Original papers (Duchi et al.\ 2011, Ward et al.\ 2020) also use linear models in their experiments.
+\end{enumerate}
+
+\subsection{Q: ``Why these two datasets?''}
+\textbf{A9a}: 123 sparse features, 32K samples --- standard binary benchmark where per-coordinate scaling matters due to feature heterogeneity.\\
+\textbf{MNIST}: 784 dense features, 60K samples --- higher-dimensional multi-class problem.\\
+Together they test adaptive methods in two regimes: sparse vs.\ dense, low vs.\ high dimensionality.
+
+\subsection{Q: ``How did you choose the learning rates?''}
+Grid search over $\eta \in \{10^{-4},\, 3\!\times\!10^{-4},\, 10^{-3},\, \ldots,\, 1\}$ --- 9 values on a log scale.
+For each optimizer we picked the $\eta$ with the best final training loss.
+Backup slide~24 shows the full sweep.
+Key finding: Adagrad is very robust across the entire range; RMSprop diverges at $\eta = 1$.
+
+\subsection{Q: ``How many epochs? What batch size?''}
+10--15 epochs, mini-batch size 128 (A9a) and 256 (MNIST).
+All results averaged over 3 random seeds to reduce noise.
+
+\subsection{Q: ``Did you implement everything from scratch?''}
+Yes. All five optimizers implemented from scratch in NumPy.
+Loss functions and gradient computations are our own code.
+We handle both dense and sparse matrices (\texttt{scipy.sparse} for A9a).
+
+%=============================================================================
+\section{Results Interpretation}
+%=============================================================================
+
+\subsection{Q: ``Is Adagrad converging faster than the theoretical rate?''}
+Yes, significantly.
+Theoretical worst-case for Adagrad: $O(\log T / \sqrt{T})$.
+Empirically on A9a: the loss drops below $10^{-7}$ suboptimality.
+This is expected --- worst-case bounds hold for \emph{arbitrary} convex functions.
+Our logistic loss has additional structure (smoothness, bounded spectral norm of $X$).
+
+\subsection{Q: ``Why are the final accuracies so similar across optimizers?''}
+All optimizers minimize the \emph{same} convex objective and converge to the \emph{same} global minimum --- just at different speeds.
+The final model is essentially identical regardless of optimizer.
+\textbf{Key insight:} adaptive methods are about \emph{speed}, not better solutions.
+
+\subsection{Q: ``Why does the non-convex regularizer not change the ranking?''}
+At $\lambda = 0.01$, the regularizer is small relative to the logistic loss --- the objective is ``mildly'' non-convex.
+In our $\lambda$-sweep (backup slide~26), at $\lambda \geq 0.1$ the effect becomes significant and accuracy drops.
+The optimizer ranking stays similar because all methods handle this mild non-convexity similarly.
+
+\subsection{Q: ``Gradient norm plot --- what does it mean when the norm goes to zero?''}
+We've reached a stationary point: $\nabla f(w) \approx 0$.
+For convex problems $\Rightarrow$ global minimum.
+For non-convex $\Rightarrow$ could be saddle point or local minimum.
+Key observation: adaptive methods bring the gradient norm down faster --- they normalize the step size, preventing overshooting when gradients are large early on.
+
+%=============================================================================
+\section{Theory vs.\ Practice}
+%=============================================================================
+
+\subsection{Q: ``Do your empirical results match the theoretical rates?''}
+Backup slide~27 shows the comparison.
+All methods converge \emph{faster} than worst-case bounds.
+Qualitatively, ranking is consistent: Adagrad converges fastest, SGD slowest.
+The bounds are for adversarial functions; our problems have nice structure.
+
+\subsection{Q: ``What assumptions do you need for SGD's $O(1/\sqrt{T})$?''}
+Standard assumptions:
+\begin{enumerate}[nosep]
+  \item $L$-Lipschitz continuous gradients: $\|\nabla f(x) - \nabla f(y)\| \leq L\|x - y\|$
+  \item Unbiased stochastic gradients: $\mathbb{E}[g_t] = \nabla f(w_t)$
+  \item Bounded variance: $\mathbb{E}[\|g_t - \nabla f(w_t)\|^2] \leq \sigma^2$
+\end{enumerate}
+Under these, SGD with $\eta = c/\sqrt{T}$ achieves $\mathbb{E}[\|\nabla f(w)\|^2] \leq O(1/\sqrt{T})$ for non-convex objectives.
+
+\subsection{Q: ``Why care about convergence rates if all methods reach the same solution?''}
+Compute budget is limited.
+If method A reaches 90\% accuracy in 100 iterations and B needs 1000, that's $10\times$ more training time.
+For large-scale problems, this translates to days vs.\ weeks.
+Convergence rates tell us which method uses compute most efficiently.
+
+%=============================================================================
+\section{Quick-Fire Definitions}
+%=============================================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l p{10.5cm}@{}}
+\toprule
+\textbf{Term} & \textbf{One-line answer} \\
+\midrule
+Positive definite & All eigenvalues $> 0$; equivalently $x^\top A x > 0$ for all $x \neq 0$ \\
+Positive semidefinite & All eigenvalues $\geq 0$; equivalently $x^\top A x \geq 0$ for all $x$ \\
+Lipschitz gradient & $\|\nabla f(x) - \nabla f(y)\| \leq L\|x-y\|$ --- gradient doesn't change too fast \\
+Unbiased estimator & $\mathbb{E}[g_t] = \nabla f(w_t)$ --- on average, stochastic gradient = true gradient \\
+Momentum & Running average of past gradients to smooth updates and accelerate \\
+Bias correction (Adam) & Divides by $(1 - \beta^t)$ to compensate for zero-initialization in first steps \\
+Sublinear convergence & Error $\to 0$ but slower than geometric. Example: $O(1/\sqrt{T})$ \\
+Linear convergence & Error decreases by constant factor each step: $e_t \leq \rho^t e_0$, $\rho < 1$ \\
+Superlinear convergence & Faster than linear; ratio $e_{t+1}/e_t \to 0$. Example: Newton's method \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}

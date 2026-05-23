@@ -1,0 +1,131 @@
+00:00:05 SPK_1
+I have two basics question.
+
+00:00:10 SPK_1
+What does it mean the positive definite?
+
+00:00:15 SPK_1
+What does it mean to be parametrics to be positive definite?
+
+00:00:18 SPK_1
+Because it's a very important condition for fierce since you have to check whether it's positive or not.
+
+00:00:33 SPK_2
+If it's negative then the accuracy is 30.
+
+00:00:36 SPK_1
+No, no, I mean mathematically what does it mean to be positive 30.
+
+00:00:45 SPK_1
+What do you choose it?
+
+00:01:21 SPK_2
+Yes.
+
+00:01:21 SPK_2
+So here.
+
+00:01:22 SPK_1
+For example SL1.
+
+00:01:24 SPK_1
+It's not always positive.
+
+00:01:32 SPK_1
+Okay, the next question is what does it mean to be the convergence linear super linear over traffic?
+
+00:01:47 SPK_2
+Okay, so it just shows the direction of.
+
+00:01:52 SPK_1
+So if it's linear convergence, how would you draw the.
+
+00:01:59 SPK_1
+If you go for example in your cross.
+
+00:02:08 SPK_1
+Granular descent has to converge linearly Is it converging linearly here in your view or not?
+
+00:02:16 SPK_1
+It's more than.
+
+00:02:21 SPK_1
+Yes.
+
+00:02:23 SPK_1
+What does it mean?
+
+00:02:25 SPK_2
+Not like a straight.
+
+00:02:26 SPK_1
+Line.
+
+00:02:26 SPK_1
+It should be a straight line or not.
+
+00:02:29 SPK_2
+Like not really.
+
+00:02:32 SPK_2
+I mean in linear setting it should be aligned but in here the GD is more than.
+
+00:02:42 SPK_3
+It is faster than or like slower than.
+
+00:02:45 SPK_3
+I mean GD.
+
+00:02:49 SPK_2
+Is slower.
+
+00:02:50 SPK_2
+Slower.
+
+00:02:59 SPK_3
+Okay, we can also go to the methodology actually what model religions could experiment.
+
+00:03:14 SPK_3
+Are you using.
+
+00:03:21 SPK_3
+What's the model like?
+
+00:03:23 SPK_3
+If you're getting the.
+
+00:03:27 SPK_2
+Yes, like written it it's just a sketched library which we automatically.
+
+00:03:38 SPK_2
+Yeah, I don't think it's neural network.
+
+00:03:40 SPK_2
+I can check.
+
+00:03:48 SPK_1
+Why do you only did the MGs?
+
+00:03:53 SPK_1
+Are you planning to.
+
+00:03:54 SPK_1
+No, I mean to compare also to the other methods.
+
+00:03:57 SPK_2
+Yeah, so we.
+
+00:03:59 SPK_2
+I think it was written we need to select at least two set so that's why we choose that one.
+
+00:04:07 SPK_2
+Also we wanted to we choose the LVF js but we also wanted to show the difference with the full bfgs.
+
+00:04:16 SPK_2
+That's why.
+
+00:04:18 SPK_4
+So the idea is that.
+
+00:04:20 SPK_2
+It is to choose one moment then.
