@@ -138,7 +138,21 @@ On the right, all methods reach roughly the same test accuracy, around 85 percen
 
 The main interpretation is that adaptive methods improve optimization speed, but they do not necessarily improve the final generalization performance on this task.
 
-## Slide 15 — MNIST Softmax Cross-Entropy
+## Slide 15 — A9a Non-convex Regularizer
+
+What happens when we add the non-convex regularizer?
+
+Here we use the same A9a logistic regression setup, but add the non-convex regularizer from the project description with lambda equal to 0.01.
+
+On the left, the final objective value is higher than in the convex A9a experiment. This is expected, because the plotted loss now also includes the regularization term.
+
+However, the optimizer ranking does not change very much. Adagrad, RMSprop, and Adam still reduce the loss quickly, while SGD is slightly slower at the beginning.
+
+On the right, the test accuracy remains almost unchanged at around 85 percent for all methods.
+
+So the interpretation is that this regularizer changes the objective value, but at this moderate lambda it does not create a difficult enough landscape to clearly expose Adam's advantage. This is one reason why we later add Rosenbrock as a controlled non-convex reference benchmark.
+
+## Slide 16 — MNIST Softmax Cross-Entropy
 
 For MNIST, the pattern is similar but more pronounced.
 
@@ -148,7 +162,7 @@ Again, the final test accuracies are close, but the adaptive methods reach good 
 
 This supports the idea that per-coordinate adaptation is useful in higher-dimensional classification problems.
 
-## Slide 16 — Gradient Norms
+## Slide 17 — Gradient Norms
 
 The gradient norm plots help explain why adaptive methods are useful.
 
@@ -158,7 +172,7 @@ On MNIST in particular, the adaptive methods reduce the gradient norm faster tha
 
 So these plots show the optimization mechanism behind the faster loss decrease.
 
-## Slide 17 — Non-convex Reference: Rosenbrock
+## Slide 18 — Non-convex Reference: Rosenbrock
 
 To better illustrate behavior on a truly non-convex objective, we add the two-dimensional Rosenbrock function as a reference benchmark.
 
@@ -174,7 +188,23 @@ SGD is the slowest method here. It eventually moves toward the minimum, but it n
 
 This benchmark complements our classification experiments by isolating a non-convex geometry where Adam's combination of momentum and adaptive scaling becomes clearly useful.
 
-## Slide 18 — Key Takeaways
+## Slide 19 — Summary of Results
+
+Here is the compact summary of the final numerical results.
+
+The table shows the final training loss and test accuracy for the three dataset settings: A9a logistic regression, A9a with the non-convex regularizer, and MNIST softmax cross-entropy.
+
+A first observation is that final accuracies are very close. On A9a, all mini-batch methods end around 85 percent accuracy, both with and without the non-convex regularizer. On MNIST, all methods are also close, around 92 to 93 percent.
+
+The larger differences are in the loss values and in the speed of convergence, which we saw in the previous plots. Adagrad has the best final MNIST loss, while RMSprop and Adam are close behind. AdaGrad-Norm is more conservative on MNIST, which explains the weaker final MNIST loss and accuracy.
+
+For completeness, we also include L-BFGS in the table as a quasi-Newton reference. It reaches a comparable final value on the convex A9a objective, but we mark it separately because it is a full-batch method and not directly comparable to mini-batch stochastic optimizers. On the non-convex regularized A9a objective, L-BFGS reaches a higher regularized loss and slightly lower test accuracy.
+
+At the bottom, we separately summarize the controlled reference benchmarks. Rosenbrock is not a dataset experiment, but it shows that Adam follows curved non-convex geometry much faster than plain SGD. L-BFGS is also not a mini-batch method; it solves Rosenbrock in 38 full-batch iterations.
+
+So the overall message is: adaptive methods mainly improve optimization speed, while final classification accuracy is similar across methods.
+
+## Slide 20 — Key Takeaways
 
 The first takeaway is speed. Adaptive methods reduce the loss much faster in early iterations.
 
@@ -184,9 +214,9 @@ The third takeaway is non-convex geometry. The Rosenbrock reference shows a sett
 
 Finally, the non-convex regularizer on A9a has only limited impact at moderate lambda values.
 
-## Slide 19 — Final Discussion
+## Slide 21 — Final Discussion
 
-We also ran additional analyses, which are included in the backup slides.
+We also ran additional analyses, which are included in the backup slides, since we did not have enough time to show them in this presentation.
 
 The learning-rate sensitivity experiment shows that Adagrad and AdaGrad-Norm are relatively robust, while RMSprop becomes sensitive at large learning rates.
 
@@ -198,7 +228,7 @@ We also include L-BFGS as a quasi-Newton reference, based on the BFGS-type quasi
 
 Overall, the Rosenbrock benchmark complements the dataset results by showing a controlled non-convex geometry where Adam's advantages are more visible.
 
-## Slide 20 — References
+## Slide 22 — References
 
 These are the main references we used.
 
@@ -206,7 +236,7 @@ Kingma and Ba introduce Adam. Duchi, Hazan, and Singer introduce Adagrad. Ward, 
 
 We also use RMSprop from the Tieleman and Hinton lecture, Reddi et al. for the Adam convergence discussion and the non-convex regularizer, Rosenbrock for the reference objective, and Xu and Zhang for the quasi-Newton reference baseline.
 
-## Slide 21 — Thank You
+## Slide 23 — Thank You
 
 Thank you for listening.
 
