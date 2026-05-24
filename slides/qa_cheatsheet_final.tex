@@ -645,9 +645,9 @@ Need to check: still faster in real seconds?
 \end{qa}
 
 \begin{qa}{Q: Why add L-BFGS?}
-\oral Quasi-Newton method from different family (2nd-order approximation).
-Reference beyond 1st-order adaptive methods.
-Planned for final report.
+\oral Quasi-Newton method from a different family, using curvature information through BFGS-type Hessian approximations.
+We use it as a full-batch reference baseline, following Xu and Zhang's 2001 survey of quasi-Newton equations and methods.
+It is not directly comparable to mini-batch Adam or SGD, but it addresses the project description's quasi-Newton comparison.
 \end{qa}
 
 % ==================================================

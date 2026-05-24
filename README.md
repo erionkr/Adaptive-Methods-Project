@@ -37,7 +37,7 @@ The Rosenbrock benchmark is a controlled reference objective used to illustrate 
 
 ## Baselines
 - **Mini-batch first-order methods:** SGD, Adagrad, AdaGrad-Norm, RMSprop, Adam.
-- **Quasi-Newton reference:** L-BFGS on selected full-batch objectives. This is included as a deterministic reference baseline, not as a mini-batch optimizer, because it uses full objective/gradient evaluations and curvature information.
+- **Quasi-Newton reference:** L-BFGS on selected full-batch objectives. This is included as a deterministic reference baseline, not as a mini-batch optimizer, because it uses full objective/gradient evaluations and curvature information. The setup follows the quasi-Newton framework surveyed by Xu & Zhang (2001).
 
 ## Milestones
 | Date | Milestone |
@@ -66,3 +66,6 @@ jupyter notebook experiments.ipynb
 - Speaker text: `slides/speaker_text_final.md`
 - Rosenbrock animation generator: `slides/generate_rosenbrock_animation.py`
 - L-BFGS reference generator: `slides/generate_lbfgs_reference.py`
+
+## Additional Reference
+- Xu, C. & Zhang, J. (2001). *A survey of quasi-Newton equations and quasi-Newton methods for optimization*. Annals of Operations Research, 103, 213-234.

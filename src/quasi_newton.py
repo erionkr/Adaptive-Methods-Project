@@ -4,6 +4,11 @@ These helpers intentionally live outside ``optimizers.py`` because L-BFGS is
 not a stochastic first-order method with a ``step(w, grad)`` interface.  It uses
 full objective and gradient evaluations through ``scipy.optimize.minimize`` and
 is therefore best interpreted as a deterministic reference baseline.
+
+Reference for the quasi-Newton setup:
+Xu, C. and Zhang, J. (2001). A survey of quasi-Newton equations and
+quasi-Newton methods for optimization. Annals of Operations Research,
+103, 213-234.
 """
 from __future__ import annotations
 
