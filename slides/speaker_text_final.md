@@ -122,7 +122,9 @@ We also evaluate logistic regression with the non-convex regularizer from Reddi 
 
 Finally, Rosenbrock is added as a reference objective. It is a controlled two-dimensional non-convex benchmark, not an additional dataset experiment.
 
-All optimizers are implemented from scratch in NumPy. For the dataset experiments, we use mini-batches and average the results over three random seeds.
+All stochastic optimizers are implemented from scratch in NumPy. For the dataset experiments, we use mini-batches and average the results over three random seeds.
+
+In addition, we include L-BFGS as a quasi-Newton reference on selected full-batch objectives. We interpret it separately, because unlike the mini-batch methods, it uses full gradients and curvature information.
 
 The metrics are training loss, test accuracy, gradient norms, and for Rosenbrock the optimizer trajectories.
 
@@ -192,6 +194,8 @@ The wall-clock comparison shows that adaptive methods have more overhead per ste
 
 The lambda sweep shows that the non-convex regularizer only becomes dominant for larger lambda values.
 
+We also include L-BFGS as a quasi-Newton reference. It is a strong full-batch baseline, but not directly comparable to mini-batch adaptive methods because its iterations use more global information.
+
 Overall, the Rosenbrock benchmark complements the dataset results by showing a controlled non-convex geometry where Adam's advantages are more visible.
 
 ## Slide 20 — References
@@ -200,7 +204,7 @@ These are the main references we used.
 
 Kingma and Ba introduce Adam. Duchi, Hazan, and Singer introduce Adagrad. Ward, Wu, and Bottou analyze AdaGrad-Norm.
 
-We also use RMSprop from the Tieleman and Hinton lecture, Reddi et al. for the Adam convergence discussion and the non-convex regularizer, and Rosenbrock for the reference objective.
+We also use RMSprop from the Tieleman and Hinton lecture, Reddi et al. for the Adam convergence discussion and the non-convex regularizer, Rosenbrock for the reference objective, and L-BFGS as the quasi-Newton reference baseline.
 
 ## Slide 21 — Thank You
 

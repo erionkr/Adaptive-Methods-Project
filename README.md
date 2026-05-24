@@ -11,7 +11,8 @@ Project/
 ├── README.md
 ├── data/                 # downloaded datasets (gitignored)
 ├── src/
-│   ├── optimizers.py     # all optimizer implementations
+│   ├── optimizers.py     # stochastic first-order optimizer implementations
+│   ├── quasi_newton.py   # full-batch L-BFGS reference baseline
 │   ├── losses.py         # logistic loss + non-convex reg
 │   └── datasets.py       # loaders for libsvm format
 ├── experiments.ipynb     # main notebook (reproducible)
@@ -33,6 +34,10 @@ Project/
    f(x,y) = (1 - x)² + 100(y - x²)², a curved valley benchmark with global minimum at (1,1).
 
 The Rosenbrock benchmark is a controlled reference objective used to illustrate optimizer behavior on curved non-convex geometry. It is not an additional dataset experiment.
+
+## Baselines
+- **Mini-batch first-order methods:** SGD, Adagrad, AdaGrad-Norm, RMSprop, Adam.
+- **Quasi-Newton reference:** L-BFGS on selected full-batch objectives. This is included as a deterministic reference baseline, not as a mini-batch optimizer, because it uses full objective/gradient evaluations and curvature information.
 
 ## Milestones
 | Date | Milestone |
@@ -60,3 +65,4 @@ jupyter notebook experiments.ipynb
 - Final deck: `Continous_Optimization_Project_Final_Presentation.pptx`
 - Speaker text: `slides/speaker_text_final.md`
 - Rosenbrock animation generator: `slides/generate_rosenbrock_animation.py`
+- L-BFGS reference generator: `slides/generate_lbfgs_reference.py`
