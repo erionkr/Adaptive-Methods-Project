@@ -82,7 +82,12 @@ Adam combines momentum with RMSprop-style scaling~\citep{kingma2014adam}:
 The first moment smooths the direction, while the second moment rescales coordinates. Adam's convergence is more delicate than its empirical robustness suggests; AMSGrad was proposed to fix known non-convergence examples~\citep{reddi2018convergence}.
 
 \paragraph{L-BFGS reference.}
-Quasi-Newton methods approximate curvature information using gradients and function values. We use L-BFGS-B from SciPy as a full-batch reference method for selected objectives. Because each L-BFGS iteration uses full objective and gradient evaluations, it is not treated as a mini-batch competitor; instead it contextualizes the stochastic first-order results.
+Quasi-Newton methods approximate curvature information using gradients and function values. In the classical BFGS form, the approximation $B_k$ to the Hessian is updated so that it satisfies the secant equation
+\begin{equation}
+    B_{k+1}s_k = y_k,\qquad
+    s_k=x_{k+1}-x_k,\quad y_k=\nabla f(x_{k+1})-\nabla f(x_k).
+\end{equation}
+This condition incorporates local curvature without explicitly forming the true Hessian. Limited-memory BFGS stores only a small number of recent $(s_k,y_k)$ pairs, which makes it practical for larger models while preserving the main quasi-Newton idea. We use L-BFGS-B from SciPy as a full-batch reference method for selected objectives. Because each L-BFGS iteration uses full objective and gradient evaluations, it is not treated as a mini-batch competitor; instead it contextualizes the stochastic first-order results.
 
 \section{Experimental Setup}
 \paragraph{Datasets.}
@@ -100,6 +105,22 @@ We also evaluate the non-convex regularized objective from Reddi et al.~\citep{r
 \end{equation}
 For MNIST, we use linear softmax regression with cross-entropy loss.
 
+\paragraph{Gradients.}
+For binary logistic regression, with $z_i=y_i x_i^\top w$, the gradient of the average loss is
+\begin{equation}
+    \nabla L(w)= -\frac{1}{n}\sum_{i=1}^n y_i x_i \,\sigma(-z_i),
+    \qquad \sigma(t)=\frac{1}{1+\exp(-t)}.
+\end{equation}
+The non-convex regularizer is separable across coordinates. For
+\begin{equation}
+    r_j(w_j)=\frac{\alpha w_j^2}{1+\alpha w_j^2},
+\end{equation}
+the derivative is
+\begin{equation}
+    r_j'(w_j)=\frac{2\alpha w_j}{(1+\alpha w_j^2)^2}.
+\end{equation}
+This derivative is linear near zero but decays for large $|w_j|$, which makes the regularization term non-convex and qualitatively different from standard $\ell_2$ regularization. For MNIST, if $P=\mathrm{softmax}(XW)$ and $Y$ is the one-hot label matrix, then the full gradient is $X^\top(P-Y)/n$.
+
 \paragraph{Reference objective.}
 To isolate non-convex geometry, we use the Rosenbrock function~\citep{rosenbrock1960automatic}
 \begin{equation}
@@ -108,7 +129,9 @@ To isolate non-convex geometry, we use the Rosenbrock function~\citep{rosenbrock
 which has a narrow curved valley and global minimum at $(1,1)$. This benchmark is not an additional dataset experiment; it is a controlled reference for optimizer trajectories.
 
 \paragraph{Protocol.}
-All stochastic optimizers are implemented from scratch in NumPy. We use mini-batches, report training loss and test accuracy, and average stochastic runs over three seeds. Hyperparameters are fixed after preliminary tuning: on A9a, SGD and Adagrad use $\eta=10^{-1}$, AdaGrad-Norm uses $\eta=1$, RMSprop uses $\eta=10^{-2}$, and Adam uses $\eta=5\cdot 10^{-3}$. On MNIST, the corresponding values are $5\cdot10^{-2}$, $10^{-1}$, $5\cdot10^{-1}$, $10^{-3}$, and $10^{-3}$.
+All stochastic optimizers are implemented from scratch in NumPy. We use mini-batches, report training loss and test accuracy, and average stochastic runs over three seeds. A9a is trained with batch size $128$ for 10 epochs, while MNIST is trained with batch size $256$ for 15 epochs. Hyperparameters are fixed after preliminary tuning: on A9a, SGD and Adagrad use $\eta=10^{-1}$, AdaGrad-Norm uses $\eta=1$, RMSprop uses $\eta=10^{-2}$, and Adam uses $\eta=5\cdot 10^{-3}$. On MNIST, the corresponding values are $5\cdot10^{-2}$, $10^{-1}$, $5\cdot10^{-1}$, $10^{-3}$, and $10^{-3}$.
+
+For the Rosenbrock reference, all methods start from the same initial point and are run for a fixed iteration budget so that trajectory differences are visible. For L-BFGS, we use deterministic full-batch objective and gradient evaluations. This distinction matters: one L-BFGS iteration can be substantially more expensive than one mini-batch first-order update, so the comparison should be read as a reference comparison rather than as a direct per-iteration race.
 
 \section{Results}
 \subsection{Classification Objectives}
@@ -185,6 +208,43 @@ On MNIST (Figure~\ref{fig:mnist}), Adagrad has the steepest empirical loss decre
     \footnotesize{$^\ast$Full-batch quasi-Newton reference; not directly comparable to mini-batch stochastic methods.}
 \end{table}
 
+\subsection{Robustness and Wall-Clock Time}
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figures/wallclock_a9a.png}
+        \caption{A9a loss against wall-clock time.}
+    \end{subfigure}
+    \begin{subfigure}{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figures/wallclock_mnist.png}
+        \caption{MNIST loss against wall-clock time.}
+    \end{subfigure}
+    \vspace{-0.4em}
+    \caption{Adaptive methods have slightly more per-step overhead, but they often reach low loss earlier in actual runtime because they need fewer effective optimization steps.}
+    \label{fig:wallclock}
+\end{figure}
+
+Iteration count alone does not fully describe practical efficiency. Adaptive methods store additional state, for example the accumulated squared gradients in Adagrad or the two moment vectors in Adam. This increases memory usage and arithmetic per step. Figure~\ref{fig:wallclock} shows that this overhead is small in our NumPy implementation relative to the benefit from faster loss reduction. On A9a, all methods are fast in absolute time, but adaptive methods reach their final loss quickly. On MNIST, the advantage remains visible even when runtime is used as the horizontal axis.
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figures/lr_sweep_a9a.png}
+        \caption{Learning-rate sensitivity on A9a.}
+    \end{subfigure}
+    \begin{subfigure}{0.48\linewidth}
+        \includegraphics[width=\linewidth]{figures/lambda_sweep.png}
+        \caption{Non-convex regularization strength.}
+    \end{subfigure}
+    \vspace{-0.4em}
+    \caption{Sensitivity experiments. The learning-rate sweep illustrates optimizer robustness, while the $\lambda$ sweep shows when the non-convex regularizer starts to dominate the classification objective.}
+    \label{fig:sensitivity}
+\end{figure}
+
+The learning-rate sweep in Figure~\ref{fig:sensitivity} highlights a practical difference between optimizers. SGD and AdaGrad-Norm are relatively predictable over a broad middle range, while RMSprop becomes unstable for large learning rates. Adam is robust for moderate learning rates but can also degrade when the base step size is too aggressive. This supports the usual practical view: adaptivity reduces, but does not remove, the need for learning-rate selection.
+
+The $\lambda$ sweep provides a separate check on the non-convex regularizer. For small $\lambda$, the regularizer changes the objective only mildly, which explains why the optimizer ranking in Figure~\ref{fig:a9a-nc} remains similar to convex logistic regression. For larger $\lambda$, the regularizer dominates, the final loss increases, and test accuracy drops. This is why we treat the moderate setting as the main dataset experiment and use Rosenbrock as the clearer non-convex geometry reference.
+
 \subsection{Gradient Norms and Reference Benchmarks}
 \begin{figure}[t]
     \centering
@@ -215,7 +275,11 @@ Figure~\ref{fig:lbfgs} summarizes the quasi-Newton reference. L-BFGS obtains the
 \section{Discussion and Limitations}
 The main empirical result is consistent across datasets: adaptive methods improve convergence speed more than final classification accuracy. This is visible in A9a and MNIST, where final accuracies are close. The strongest benefit appears in early loss reduction and in the ability to handle coordinate-wise gradient heterogeneity.
 
+The comparison also separates three notions that are often conflated: iteration efficiency, runtime efficiency, and final generalization. Adagrad and Adam can look strong per iteration because they rescale coordinates; in wall-clock time, this advantage remains only if the extra state and arithmetic are cheaper than the saved iterations. In our experiments this is mostly the case, but the effect is task dependent. Final test accuracy is a different question: once the linear models are sufficiently optimized, all methods reach similar decision boundaries on A9a, and only small accuracy differences remain on MNIST.
+
 The non-convex regularizer from the project description has limited practical effect at $\lambda=10^{-2}$. This does not mean the objective is unimportant; rather, for this dataset and regularization strength it remains too well behaved to show a dramatic Adam advantage. Rosenbrock complements the dataset experiments by isolating the relevant geometry: a narrow curved valley where momentum and adaptive scaling help.
+
+The quasi-Newton reference should also be interpreted carefully. L-BFGS uses curvature information and full-batch gradients, so it is expected to perform very well on smooth low-dimensional objectives such as Rosenbrock. On large stochastic machine-learning objectives, however, each full-batch step is expensive, and the method does not directly address mini-batch noise. Its role in this project is therefore not to replace adaptive first-order methods, but to show what a curvature-aware deterministic baseline can achieve when full gradients are available.
 
 There are also limitations. Hyperparameters were tuned manually and then fixed; a larger grid could change relative rankings. L-BFGS was evaluated only as a selected full-batch reference, not on MNIST. Finally, the experiments use linear models, so they do not fully capture the highly non-convex loss surfaces of deep neural networks.
 
