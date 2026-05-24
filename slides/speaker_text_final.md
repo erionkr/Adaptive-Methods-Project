@@ -198,7 +198,7 @@ A first observation is that final accuracies are very close. On A9a, all mini-ba
 
 The larger differences are in the loss values and in the speed of convergence, which we saw in the previous plots. Adagrad has the best final MNIST loss, while RMSprop and Adam are close behind. AdaGrad-Norm is more conservative on MNIST, which explains the weaker final MNIST loss and accuracy.
 
-For completeness, we also include L-BFGS in the table as a quasi-Newton reference. It reaches a comparable final value on the convex A9a objective, but we mark it separately because it is a full-batch method and not directly comparable to mini-batch stochastic optimizers. On the non-convex regularized A9a objective, L-BFGS reaches a higher regularized loss and slightly lower test accuracy.
+For completeness, we also include L-BFGS in the table as a quasi-Newton reference. It reaches a comparable final value on the convex A9a objective, but we mark it separately because it is a full-batch method and not directly comparable to mini-batch stochastic optimizers. We only ran L-BFGS on selected full-batch reference objectives, namely A9a and Rosenbrock, so the MNIST columns are intentionally left blank for L-BFGS. On the non-convex regularized A9a objective, L-BFGS reaches a higher regularized loss and slightly lower test accuracy.
 
 At the bottom, we separately summarize the controlled reference benchmarks. Rosenbrock is not a dataset experiment, but it shows that Adam follows curved non-convex geometry much faster than plain SGD. L-BFGS is also not a mini-batch method; it solves Rosenbrock in 38 full-batch iterations.
 
