@@ -1,8 +1,9 @@
 \documentclass[10pt]{article}
 
-\usepackage[a4paper,margin=0.78in]{geometry}
+\usepackage[a4paper,margin=1in]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{mathptmx}
 \usepackage[protrusion=true,expansion=false]{microtype}
 \usepackage{amsmath,amssymb,mathtools}
 \usepackage{booktabs}
@@ -10,9 +11,19 @@
 \usepackage{subcaption}
 \usepackage[numbers,sort&compress]{natbib}
 \usepackage[hidelinks]{hyperref}
-\usepackage[font=small,labelfont=bf]{caption}
+\usepackage[font=small,labelfont=bf,skip=4pt]{caption}
 
-\title{\vspace{-1.5em}Adaptive First-Order Methods for Logistic Objectives and Non-Convex Reference Landscapes}
+\setlength{\parindent}{0.9em}
+\setlength{\parskip}{0.12em}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{0pt}
+\renewcommand{\arraystretch}{1.08}
+\emergencystretch=2em
+
+\title{\vspace{-1.2em}\textbf{Adaptive First-Order Methods for Logistic Objectives\\and Non-Convex Reference Landscapes}}
 \author{Erion Krasniqi \and Denis Mustafa Xhabrahimi\\
 University of Basel\\
 Continuous Optimization Project, Spring Semester 2026}
@@ -137,49 +148,45 @@ For the Rosenbrock reference, all methods start from the same initial point and 
 \subsection{Classification Objectives}
 \begin{figure}[t]
     \centering
-    \begin{subfigure}{0.48\linewidth}
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/a9a_logistic_loss.png}
-        \caption{A9a logistic loss.}
+        \caption{A9a logistic loss}
     \end{subfigure}
-    \begin{subfigure}{0.48\linewidth}
+    \hfill
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/a9a_logistic_acc.png}
-        \caption{A9a test accuracy.}
+        \caption{A9a test accuracy}
     \end{subfigure}
-    \vspace{-0.4em}
-    \caption{On convex A9a logistic regression, adaptive methods reduce training loss faster than SGD, while all methods reach similar final test accuracy.}
-    \label{fig:a9a}
-\end{figure}
-
-\begin{figure}[t]
-    \centering
-    \begin{subfigure}{0.48\linewidth}
+    \vspace{0.35em}
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/a9a_nonconvex_loss.png}
-        \caption{A9a non-convex regularized loss.}
+        \caption{A9a non-convex loss}
     \end{subfigure}
-    \begin{subfigure}{0.48\linewidth}
+    \hfill
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/a9a_nonconvex_acc.png}
-        \caption{A9a non-convex test accuracy.}
+        \caption{A9a non-convex accuracy}
     \end{subfigure}
-    \vspace{-0.4em}
-    \caption{The non-convex regularizer raises the final objective value, but at $\lambda=10^{-2}$ it has little effect on the optimizer ranking or test accuracy.}
+    \caption{A9a results. Adaptive methods reduce loss faster on convex logistic regression, while final test accuracy remains similar. The non-convex regularizer raises the objective value but does not substantially change the optimizer ranking at $\lambda=10^{-2}$.}
+    \label{fig:a9a}
     \label{fig:a9a-nc}
 \end{figure}
 
 Figure~\ref{fig:a9a} shows that on the convex A9a objective, Adagrad, RMSprop, and Adam decrease the loss rapidly in early iterations, while SGD is slower. However, final accuracies are nearly identical. This supports the interpretation that adaptive methods improve optimization speed more than final generalization quality on this task.
 
-Adding the non-convex regularizer increases the final objective value (Figure~\ref{fig:a9a-nc}). The ranking remains similar and accuracies remain near $84$--$85\%$. Thus, for the chosen moderate regularization strength, the required non-convex objective does not create a landscape where Adam's advantage is visually dominant.
+Adding the non-convex regularizer increases the final objective value, as shown in the lower panels of Figure~\ref{fig:a9a}. The ranking remains similar and accuracies remain near $84$--$85\%$. Thus, for the chosen moderate regularization strength, the required non-convex objective does not create a landscape where Adam's advantage is visually dominant.
 
 \begin{figure}[t]
     \centering
-    \begin{subfigure}{0.48\linewidth}
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/mnist_loss.png}
-        \caption{MNIST softmax loss.}
+        \caption{MNIST softmax loss}
     \end{subfigure}
-    \begin{subfigure}{0.48\linewidth}
+    \hfill
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/mnist_acc.png}
-        \caption{MNIST test accuracy.}
+        \caption{MNIST test accuracy}
     \end{subfigure}
-    \vspace{-0.4em}
     \caption{MNIST is higher-dimensional. Per-coordinate adaptation is more useful here: Adagrad reaches the lowest final loss, while RMSprop and Adam are close behind.}
     \label{fig:mnist}
 \end{figure}
@@ -211,15 +218,15 @@ On MNIST (Figure~\ref{fig:mnist}), Adagrad has the steepest empirical loss decre
 \subsection{Robustness and Wall-Clock Time}
 \begin{figure}[t]
     \centering
-    \begin{subfigure}{0.48\linewidth}
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/wallclock_a9a.png}
-        \caption{A9a loss against wall-clock time.}
+        \caption{A9a wall-clock}
     \end{subfigure}
-    \begin{subfigure}{0.48\linewidth}
+    \hfill
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/wallclock_mnist.png}
-        \caption{MNIST loss against wall-clock time.}
+        \caption{MNIST wall-clock}
     \end{subfigure}
-    \vspace{-0.4em}
     \caption{Adaptive methods have slightly more per-step overhead, but they often reach low loss earlier in actual runtime because they need fewer effective optimization steps.}
     \label{fig:wallclock}
 \end{figure}
@@ -228,15 +235,15 @@ Iteration count alone does not fully describe practical efficiency. Adaptive met
 
 \begin{figure}[t]
     \centering
-    \begin{subfigure}{0.48\linewidth}
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/lr_sweep_a9a.png}
-        \caption{Learning-rate sensitivity on A9a.}
+        \caption{Learning-rate sensitivity}
     \end{subfigure}
-    \begin{subfigure}{0.48\linewidth}
+    \hfill
+    \begin{subfigure}{0.46\linewidth}
         \includegraphics[width=\linewidth]{figures/lambda_sweep.png}
-        \caption{Non-convex regularization strength.}
+        \caption{Regularization strength}
     \end{subfigure}
-    \vspace{-0.4em}
     \caption{Sensitivity experiments. The learning-rate sweep illustrates optimizer robustness, while the $\lambda$ sweep shows when the non-convex regularizer starts to dominate the classification objective.}
     \label{fig:sensitivity}
 \end{figure}
@@ -248,15 +255,15 @@ The $\lambda$ sweep provides a separate check on the non-convex regularizer. For
 \subsection{Gradient Norms and Reference Benchmarks}
 \begin{figure}[t]
     \centering
-    \begin{subfigure}{0.48\linewidth}
+    \begin{subfigure}{0.44\linewidth}
         \includegraphics[width=\linewidth]{figures/mnist_gradnorm.png}
-        \caption{MNIST gradient norms.}
+        \caption{MNIST gradient norms}
     \end{subfigure}
+    \hfill
     \begin{subfigure}{0.48\linewidth}
         \includegraphics[width=\linewidth]{figures/rosenbrock_final.png}
-        \caption{Rosenbrock trajectories, final animation frame.}
+        \caption{Rosenbrock trajectories}
     \end{subfigure}
-    \vspace{-0.4em}
     \caption{Gradient norms explain the faster early progress of adaptive methods. Rosenbrock highlights Adam's advantage on a curved non-convex valley.}
     \label{fig:diagnostics}
 \end{figure}
@@ -265,7 +272,7 @@ Gradient norms clarify the mechanism behind the faster loss decrease: adaptive m
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.88\linewidth]{figures/lbfgs_reference.png}
+    \includegraphics[width=0.76\linewidth]{figures/lbfgs_reference.png}
     \caption{L-BFGS reference. On A9a, L-BFGS reaches comparable final losses. On Rosenbrock, it solves the benchmark in 38 full-batch iterations, illustrating why it should be interpreted as a separate deterministic reference rather than as a mini-batch competitor.}
     \label{fig:lbfgs}
 \end{figure}
