@@ -102,15 +102,21 @@ RMSprop uses an exponential moving average of squared gradients:
 Unlike Adagrad, it forgets old gradients and can react faster when the local geometry changes. The method is widely used but is mostly heuristic from a convergence-theory perspective~\citep{ruder2016overview}.
 
 \subsection{Adam}
-Adam combines momentum with RMSprop-style scaling~\citep{kingma2014adam}:
+Adam combines momentum with RMSprop-style scaling:
 \begin{align}
     m_t &= \beta_1 m_{t-1}+(1-\beta_1)g_t,\\
-    v_t &= \beta_2 v_{t-1}+(1-\beta_2)g_t\odot g_t,\\
-    \hat m_t &= \frac{m_t}{1-\beta_1^t},\qquad
-    \hat v_t = \frac{v_t}{1-\beta_2^t},\\
-    w_{t+1} &= w_t-\eta \frac{\hat m_t}{\sqrt{\hat v_t}+\epsilon}.
+    v_t &= \beta_2 v_{t-1}+(1-\beta_2)g_t\odot g_t.
 \end{align}
-The first moment smooths the direction, while the second moment rescales coordinates. Adam's convergence is more delicate than its empirical robustness suggests; AMSGrad was proposed to fix known non-convergence examples~\citep{reddi2018convergence}.
+The bias-corrected moments are
+\begin{equation}
+    \hat m_t = \frac{m_t}{1-\beta_1^t},\qquad
+    \hat v_t = \frac{v_t}{1-\beta_2^t},
+\end{equation}
+and the update is
+\begin{equation}
+    w_{t+1} = w_t-\eta \frac{\hat m_t}{\sqrt{\hat v_t}+\epsilon}.
+\end{equation}
+The first moment smooths the direction, while the second moment rescales coordinates.
 
 \subsection{L-BFGS Reference}
 Quasi-Newton methods approximate curvature information using gradients and function values. In the classical BFGS form, the approximation $B_k$ to the Hessian is updated so that it satisfies the secant equation
