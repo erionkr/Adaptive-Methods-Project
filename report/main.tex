@@ -74,7 +74,9 @@ It is cheap per iteration and memory efficient, but sensitive to the learning ra
 \subsection{Adagrad}
 Adagrad accumulates squared gradients coordinate-wise~\citep{duchi2011adaptive}:
 \begin{equation}
-    G_t=G_{t-1}+g_t\odot g_t,\qquad
+    G_t=G_{t-1}+g_t\odot g_t,
+\end{equation}
+\begin{equation}
     w_{t+1}=w_t-\eta \frac{g_t}{\sqrt{G_t}+\epsilon}.
 \end{equation}
 Coordinates with large historical gradients receive smaller effective steps. This is useful for sparse features but the accumulated denominator can grow monotonically, causing steps to decay.
@@ -82,7 +84,9 @@ Coordinates with large historical gradients receive smaller effective steps. Thi
 \subsection{AdaGrad-Norm}
 AdaGrad-Norm replaces coordinate-wise accumulation by a single scalar accumulator~\citep{ward2020adagrad}:
 \begin{equation}
-    b_t^2=b_{t-1}^2+\norm{g_t}^2,\qquad
+    b_t^2=b_{t-1}^2+\norm{g_t}^2,
+\end{equation}
+\begin{equation}
     w_{t+1}=w_t-\frac{\eta}{b_t+\epsilon}g_t.
 \end{equation}
 It retains adaptive scaling and admits sharp convergence guarantees over non-convex landscapes, but lacks per-coordinate adaptation.
@@ -90,7 +94,9 @@ It retains adaptive scaling and admits sharp convergence guarantees over non-con
 \subsection{RMSprop}
 RMSprop uses an exponential moving average of squared gradients:
 \begin{equation}
-    v_t=\rho v_{t-1}+(1-\rho)g_t\odot g_t,\qquad
+    v_t=\rho v_{t-1}+(1-\rho)g_t\odot g_t,
+\end{equation}
+\begin{equation}
     w_{t+1}=w_t-\eta\frac{g_t}{\sqrt{v_t}+\epsilon}.
 \end{equation}
 Unlike Adagrad, it forgets old gradients and can react faster when the local geometry changes. The method is widely used but is mostly heuristic from a convergence-theory perspective~\citep{ruder2016overview}.
