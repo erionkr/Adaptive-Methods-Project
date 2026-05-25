@@ -23,22 +23,36 @@
 \renewcommand{\arraystretch}{1.08}
 \emergencystretch=2em
 
-\title{\vspace{-1.2em}\textbf{Adaptive First-Order Methods for Logistic Objectives\\and Non-Convex Reference Landscapes}}
-\author{Erion Krasniqi \and Denis Mustafa Xhabrahimi\\
-University of Basel\\
-Continuous Optimization Project, Spring Semester 2026}
-\date{}
-
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
 
 \begin{document}
-\maketitle
+\begin{center}
+{\LARGE\bfseries Adaptive First-Order Methods for Logistic Objectives\\[0.25em]
+and Non-Convex Reference Landscapes\par}
 
-\begin{abstract}
-Adaptive first-order methods modify the effective step size from the observed gradient history and are widely used in large-scale machine learning. This report compares stochastic gradient descent (SGD), Adagrad, AdaGrad-Norm, RMSprop, and Adam on two classification datasets, A9a and MNIST, using logistic and softmax cross-entropy objectives. We additionally evaluate logistic regression with the non-convex regularizer specified in the project description and include two controlled reference baselines: the Rosenbrock function, which exposes curved non-convex geometry, and full-batch L-BFGS as a quasi-Newton reference. Across the classification tasks, adaptive methods mainly improve the speed of optimization; final test accuracies are close across optimizers. The Rosenbrock benchmark, however, makes Adam's advantage from momentum and adaptive coordinate scaling visible, while L-BFGS illustrates the behavior of a stronger deterministic full-batch method that is not directly comparable to mini-batch stochastic methods.
-\end{abstract}
+\vspace{2.3em}
+
+{\Large Erion Krasniqi \hspace{1.2cm} Denis Mustafa Xhabrahimi\par}
+\vspace{0.25em}
+{\Large University of Basel\par}
+\vspace{0.25em}
+{\Large Continuous Optimization Project, Spring Semester 2026\par}
+
+\vspace{3.0em}
+
+{\large\bfseries Abstract\par}
+\end{center}
+\vspace{0.6em}
+
+\begin{quote}
+\large
+Adaptive first-order methods modify the effective step size using the observed gradient history and are widely used in large-scale machine learning. This report compares stochastic gradient descent (SGD), Adagrad, AdaGrad-Norm, RMSprop, and Adam on two classification datasets, A9a and MNIST, using logistic and softmax cross-entropy objectives. We additionally evaluate logistic regression with the non-convex regularizer specified in the project description and include two controlled reference baselines: the Rosenbrock function, which exposes curved non-convex geometry, and full-batch L-BFGS as a quasi-Newton reference. Across the classification tasks, adaptive methods mainly improve the speed of optimization; final test accuracies are close across optimizers. The Rosenbrock benchmark makes Adam's advantage from momentum and adaptive coordinate scaling visible, while L-BFGS illustrates the behavior of a stronger deterministic full-batch method that is not directly comparable to mini-batch stochastic methods.
+\end{quote}
+
+\normalsize
+\vspace{1.4em}
 
 \section{Introduction}
 Gradient-based optimization methods iterate
@@ -50,14 +64,14 @@ where $g_t$ is a gradient or stochastic gradient estimate. The practical difficu
 The project has two goals. First, we survey the mathematical update rules and qualitative differences between the methods. Second, we implement them in NumPy and compare their convergence on A9a and MNIST. Since the required logistic and softmax objectives are relatively well behaved, we also include a two-dimensional Rosenbrock benchmark to visualize a genuinely curved non-convex landscape. Finally, we add L-BFGS as a selected full-batch quasi-Newton reference, following the quasi-Newton framework surveyed by Xu and Zhang~\citep{xu2001survey}.
 
 \section{Related Work and Methods}
-\paragraph{SGD.}
+\subsection{SGD}
 Stochastic gradient descent uses a single global learning rate:
 \begin{equation}
     w_{t+1}=w_t-\eta g_t.
 \end{equation}
 It is cheap per iteration and memory efficient, but sensitive to the learning rate and unable to adapt per coordinate.
 
-\paragraph{Adagrad.}
+\subsection{Adagrad}
 Adagrad accumulates squared gradients coordinate-wise~\citep{duchi2011adaptive}:
 \begin{equation}
     G_t=G_{t-1}+g_t\odot g_t,\qquad
@@ -65,7 +79,7 @@ Adagrad accumulates squared gradients coordinate-wise~\citep{duchi2011adaptive}:
 \end{equation}
 Coordinates with large historical gradients receive smaller effective steps. This is useful for sparse features but the accumulated denominator can grow monotonically, causing steps to decay.
 
-\paragraph{AdaGrad-Norm.}
+\subsection{AdaGrad-Norm}
 AdaGrad-Norm replaces coordinate-wise accumulation by a single scalar accumulator~\citep{ward2020adagrad}:
 \begin{equation}
     b_t^2=b_{t-1}^2+\norm{g_t}^2,\qquad
@@ -73,7 +87,7 @@ AdaGrad-Norm replaces coordinate-wise accumulation by a single scalar accumulato
 \end{equation}
 It retains adaptive scaling and admits sharp convergence guarantees over non-convex landscapes, but lacks per-coordinate adaptation.
 
-\paragraph{RMSprop.}
+\subsection{RMSprop}
 RMSprop uses an exponential moving average of squared gradients:
 \begin{equation}
     v_t=\rho v_{t-1}+(1-\rho)g_t\odot g_t,\qquad
@@ -81,7 +95,7 @@ RMSprop uses an exponential moving average of squared gradients:
 \end{equation}
 Unlike Adagrad, it forgets old gradients and can react faster when the local geometry changes. The method is widely used but is mostly heuristic from a convergence-theory perspective~\citep{ruder2016overview}.
 
-\paragraph{Adam.}
+\subsection{Adam}
 Adam combines momentum with RMSprop-style scaling~\citep{kingma2014adam}:
 \begin{align}
     m_t &= \beta_1 m_{t-1}+(1-\beta_1)g_t,\\
@@ -92,7 +106,7 @@ Adam combines momentum with RMSprop-style scaling~\citep{kingma2014adam}:
 \end{align}
 The first moment smooths the direction, while the second moment rescales coordinates. Adam's convergence is more delicate than its empirical robustness suggests; AMSGrad was proposed to fix known non-convergence examples~\citep{reddi2018convergence}.
 
-\paragraph{L-BFGS reference.}
+\subsection{L-BFGS Reference}
 Quasi-Newton methods approximate curvature information using gradients and function values. In the classical BFGS form, the approximation $B_k$ to the Hessian is updated so that it satisfies the secant equation
 \begin{equation}
     B_{k+1}s_k = y_k,\qquad
