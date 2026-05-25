@@ -121,10 +121,10 @@ Quasi-Newton methods approximate curvature information using gradients and funct
 This condition incorporates local curvature without explicitly forming the true Hessian. Limited-memory BFGS stores only a small number of recent $(s_k,y_k)$ pairs, which makes it practical for larger models while preserving the main quasi-Newton idea. We use L-BFGS-B from SciPy as a full-batch reference method for selected objectives. Because each L-BFGS iteration uses full objective and gradient evaluations, it is not treated as a mini-batch competitor; instead it contextualizes the stochastic first-order results.
 
 \section{Experimental Setup}
-\paragraph{Datasets.}
+\subsection{Datasets}
 We use two LIBSVM datasets. A9a is a binary classification problem with 32,561 training samples and 123 sparse features; labels are represented as $y_i\in\{-1,+1\}$. MNIST is a ten-class classification problem with 60,000 training samples and 780 features in the LIBSVM version used here.
 
-\paragraph{Objectives.}
+\subsection{Objectives}
 For A9a, the convex logistic objective is
 \begin{equation}
     L(w)=\frac{1}{n}\sum_{i=1}^n \log(1+\exp(-y_i x_i^\top w)).
@@ -136,7 +136,7 @@ We also evaluate the non-convex regularized objective from Reddi et al.~\citep{r
 \end{equation}
 For MNIST, we use linear softmax regression with cross-entropy loss.
 
-\paragraph{Gradients.}
+\subsection{Gradients}
 For binary logistic regression, with $z_i=y_i x_i^\top w$, the gradient of the average loss is
 \begin{equation}
     \nabla L(w)= -\frac{1}{n}\sum_{i=1}^n y_i x_i \,\sigma(-z_i),
@@ -152,14 +152,14 @@ the derivative is
 \end{equation}
 This derivative is linear near zero but decays for large $|w_j|$, which makes the regularization term non-convex and qualitatively different from standard $\ell_2$ regularization. For MNIST, if $P=\mathrm{softmax}(XW)$ and $Y$ is the one-hot label matrix, then the full gradient is $X^\top(P-Y)/n$.
 
-\paragraph{Reference objective.}
+\subsection{Reference Objective}
 To isolate non-convex geometry, we use the Rosenbrock function~\citep{rosenbrock1960automatic}
 \begin{equation}
     f(x,y)=(1-x)^2+100(y-x^2)^2,
 \end{equation}
 which has a narrow curved valley and global minimum at $(1,1)$. This benchmark is not an additional dataset experiment; it is a controlled reference for optimizer trajectories.
 
-\paragraph{Protocol.}
+\subsection{Protocol}
 All stochastic optimizers are implemented from scratch in NumPy. We use mini-batches, report training loss and test accuracy, and average stochastic runs over three seeds. A9a is trained with batch size $128$ for 10 epochs, while MNIST is trained with batch size $256$ for 15 epochs. Hyperparameters are fixed after preliminary tuning: on A9a, SGD and Adagrad use $\eta=10^{-1}$, AdaGrad-Norm uses $\eta=1$, RMSprop uses $\eta=10^{-2}$, and Adam uses $\eta=5\cdot 10^{-3}$. On MNIST, the corresponding values are $5\cdot10^{-2}$, $10^{-1}$, $5\cdot10^{-1}$, $10^{-3}$, and $10^{-3}$.
 
 For the Rosenbrock reference, all methods start from the same initial point and are run for a fixed iteration budget so that trajectory differences are visible. For L-BFGS, we use deterministic full-batch objective and gradient evaluations. This distinction matters: one L-BFGS iteration can be substantially more expensive than one mini-batch first-order update, so the comparison should be read as a reference comparison rather than as a direct per-iteration race.
