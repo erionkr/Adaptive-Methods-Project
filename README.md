@@ -7,7 +7,7 @@ Survey & empirical comparison of adaptive first-order methods (Adam, Adagrad, Ad
 
 ## Structure
 ```
-Project/
+Adaptive-Methods-Project-main/
 ├── README.md
 ├── data/                 # downloaded datasets (gitignored)
 ├── src/

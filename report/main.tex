@@ -150,7 +150,7 @@ To isolate non-convex geometry, we use the Rosenbrock function~\citep{rosenbrock
 which has a narrow curved valley and global minimum at $(1,1)$. This benchmark is not an additional dataset experiment; it is a controlled reference for optimizer trajectories.
 
 \subsection{Protocol}
-All stochastic optimizers are implemented from scratch in NumPy. We use mini-batches, report training loss and test accuracy, and average stochastic runs over three seeds. A9a is trained with batch size $128$ for 10 epochs, while MNIST is trained with batch size $256$ for 15 epochs. Hyperparameters are fixed after preliminary tuning: on A9a, SGD and Adagrad use $\eta=10^{-1}$, AdaGrad-Norm uses $\eta=1$, RMSprop uses $\eta=10^{-2}$, and Adam uses $\eta=5\cdot 10^{-3}$. On MNIST, the corresponding values are $5\cdot10^{-2}$, $10^{-1}$, $5\cdot10^{-1}$, $10^{-3}$, and $10^{-3}$.
+All stochastic optimizers are implemented from scratch in NumPy. We use mini-batches, report training loss and test accuracy, and average stochastic runs over three seeds. A9a is trained with batch size $128$ for 10 epochs, while MNIST is trained with batch size $256$ for 15 epochs. Hyperparameters are fixed after preliminary tuning: on A9a, SGD and Adagrad use $\eta=10^{-1}$, AdaGrad-Norm uses $\eta=1$, RMSprop uses $\eta=10^{-2}$, and Adam uses $\eta=5\cdot 10^{-3}$. On MNIST, the corresponding values are $5\cdot10^{-2}$, $10^{-1}$, $5\cdot10^{-1}$, $10^{-3}$, and $10^{-3}$. The remaining optimizer-specific hyperparameters are kept at their standard default values throughout: RMSprop uses decay rate $\rho=0.9$; Adam uses $\beta_1=0.9$, $\beta_2=0.999$; both use $\epsilon=10^{-8}$ for numerical stability.
 
 For the Rosenbrock reference, all methods start from the same initial point and are run for a fixed iteration budget so that trajectory differences are visible. For L-BFGS, we use deterministic full-batch objective and gradient evaluations. This distinction matters: one L-BFGS iteration can be substantially more expensive than one mini-batch first-order update, so the comparison should be read as a reference comparison rather than as a direct per-iteration race.
 
@@ -291,7 +291,7 @@ The comparison separates three notions that are often conflated: iteration effic
 
 The non-convex regularizer from the project description has limited practical effect at $\lambda=10^{-2}$. For this dataset and regularization strength, the landscape remains too well behaved to show a dramatic Adam advantage. Rosenbrock complements the dataset experiments by isolating the relevant geometry.
 
-The quasi-Newton reference should be interpreted carefully. L-BFGS uses curvature information and full-batch gradients, so it is expected to perform very well on smooth objectives. Its role is not to replace adaptive first-order methods, but to contextualize stochastic results with a deterministic baseline.
+The quasi-Newton reference, L-BFGS, uses curvature information and full-batch gradients, so it is expected to perform very well on smooth objectives. Its role is not to replace adaptive first-order methods, but to contextualize stochastic results with a deterministic baseline.
 
 Limitations include: manually tuned hyperparameters, L-BFGS evaluated only on selected objectives, and the use of linear models that do not fully capture deep non-convex loss surfaces.
 
